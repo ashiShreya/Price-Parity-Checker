@@ -1,0 +1,165 @@
+// --- SIMULATED DATA (Replace with API fetch to your C++ server in real project) ---
+const PARITY_DATA = [
+    {
+        id: 101,
+        name: "HyperX Gaming Headset",
+        averagePrice: 100.49,
+        status: "In Parity",
+        statusClass: "status-in-parity",
+        retailers: [
+            { name: "Amazon", price: 99.99, isOutlier: false },
+            { name: "Best Buy", price: 102.50, isOutlier: false },
+            { name: "Walmart", price: 98.99, isOutlier: false }
+        ],
+        history: {
+            dates: ["Oct 1", "Oct 8", "Oct 15", "Oct 22", "Oct 28"],
+            amazon: [105, 100, 99, 101, 99.99],
+            bestbuy: [100, 105, 102, 103, 102.50],
+            walmart: [98, 100, 99, 98.5, 98.99]
+        }
+    },
+    {
+        id: 201,
+        name: "Series X Smart Watch",
+        averagePrice: 218.33,
+        status: "MAJOR BREACH",
+        statusClass: "status-major-breach",
+        retailers: [
+            { name: "Amazon", price: 249.99, isOutlier: true },
+            { name: "Target", price: 199.99, isOutlier: false },
+            { name: "Vendor Site", price: 205.00, isOutlier: false }
+        ],
+        history: {
+            dates: ["Oct 1", "Oct 8", "Oct 15", "Oct 22", "Oct 28"],
+            amazon: [255, 250, 240, 245, 249.99],
+            target: [200, 200, 195, 200, 199.99],
+            vendor: [205, 210, 208, 206, 205]
+        }
+    },
+    {
+        id: 301,
+        name: "Eco-Friendly Water Bottle",
+        averagePrice: 29.99,
+        status: "Minor Discrepancy",
+        statusClass: "status-minor-breach",
+        retailers: [
+            { name: "EcoStore", price: 28.50, isOutlier: false },
+            { name: "Amazon", price: 31.99, isOutlier: true },
+            { name: "Target", price: 29.48, isOutlier: false }
+        ],
+        history: {
+            dates: ["Oct 1", "Oct 8", "Oct 15", "Oct 22", "Oct 28"],
+            ecostore: [28, 29, 28.5, 28.5, 28.50],
+            amazon: [30, 32, 31, 31.5, 31.99],
+            target: [29, 30, 28.8, 29.2, 29.48]
+        }
+    }
+];
+
+let currentChart = null; // Chart.js instance
+
+/**
+ * Loads and renders the product list.
+ */
+async function loadParityReport() {
+    const listElement = document.getElementById('product-list');
+    listElement.innerHTML = ''; // Clear previous or loading content
+
+    // Replace with real API fetch in production
+    const products = PARITY_DATA;
+
+    products.forEach(p => {
+        const cardHTML = `
+            <div class="product-card" data-product-id="${p.id}" onclick="showProductDetails(${p.id})">
+                <h3>${p.name}</h3>
+                <p>Avg Price: <strong>$${p.averagePrice.toFixed(2)}</strong></p>
+                <span class="status-badge ${p.statusClass}">${p.status}</span>
+            </div>
+        `;
+        listElement.insertAdjacentHTML('beforeend', cardHTML);
+    });
+}
+
+/**
+ * Renders the detailed view for a single product, including the chart.
+ * @param {number} productId 
+ */
+function showProductDetails(productId) {
+    const product = PARITY_DATA.find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('detail-title').textContent = ${product.name} - Detail Report;
+    document.getElementById('detail-section').classList.remove('hidden');
+
+    // Scroll to detail section
+    document.getElementById('detail-section').scrollIntoView({ behavior: 'smooth' });
+
+    // 1. Render Retailer Breakdown
+    const breakdownEl = document.getElementById('retailer-breakdown');
+    breakdownEl.innerHTML = '<h3>Price Breakdown</h3>';
+
+    product.retailers.forEach(r => {
+        const outlierClass = r.isOutlier ? 'style="border-left: 5px solid var(--color-danger);"' : '';
+        breakdownEl.innerHTML += `
+            <p ${outlierClass}>
+                <strong>${r.name}:</strong> $${r.price.toFixed(2)} 
+                ${r.isOutlier ? ' (OUTLIER)' : ''}
+            </p>
+        `;
+    });
+
+    // 2. Render Chart
+    renderPriceChart(product);
+}
+
+/**
+ * Initializes and renders the Chart.js line graph.
+ * @param {Object} product 
+ */
+function renderPriceChart(product) {
+    const ctx = document.getElementById('priceChart').getContext('2d');
+
+    if (currentChart) currentChart.destroy();
+
+    // Dynamically generate datasets from history
+    const datasets = Object.entries(product.history)
+        .filter(([key]) => key !== 'dates')
+        .map(([key, values], index) => ({
+            label: key.charAt(0).toUpperCase() + key.slice(1),
+            data: values,
+            borderColor: ['#3498db', '#e74c3c', '#2ecc71', '#9b59b6'][index % 4],
+            tension: 0.1
+        }));
+
+    // Add Average Price reference line
+    datasets.push({
+        label: 'Average Price',
+        data: Array(product.history.dates.length).fill(product.averagePrice),
+        borderColor: '#f39c12',
+        borderDash: [5, 5],
+        pointRadius: 0,
+        tension: 0
+    });
+
+    currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: product.history.dates,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Price History (Last 4 Weeks)' }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: 'Price ($)' } }
+            }
+        }
+    });
+}
+
+// Start the app
+window.onload = loadParityReport;

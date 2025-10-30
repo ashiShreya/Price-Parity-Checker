@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Parity Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>⚖ Price Parity Checker</h1>
+        <p>Real-time monitoring for price discrepancies across retailers.</p>
+    </header>
+
+    <main>
+        <section id="product-list-section">
+            <h2>Monitored Products</h2>
+            <div id="product-list">
+                <p id="loading-message">Loading parity report...</p>
+            </div>
+        </section>
+
+        <section id="detail-section" class="hidden">
+            <h2 id="detail-title"></h2>
+            <div class="detail-content">
+                <div class="price-chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+                <div id="retailer-breakdown">
+                    <h3>Price Breakdown</h3>
+                    </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Academic Project | Data Simulated</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
